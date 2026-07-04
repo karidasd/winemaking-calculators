@@ -11,9 +11,13 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.9%2B-gold?style=for-the-badge&logo=python" />
-  <img src="https://img.shields.io/badge/Streamlit-Web%20App-darkred?style=for-the-badge&logo=streamlit" />
+  <a href="https://winemaking-calculators.streamlit.app/"><img src="https://img.shields.io/badge/Live%20Demo-Streamlit%20Cloud-darkred?style=for-the-badge&logo=streamlit" /></a>
   <img src="https://img.shields.io/badge/License-MIT-burgundy?style=for-the-badge" />
   <img src="https://img.shields.io/badge/OIV-Standards-darkgreen?style=for-the-badge" />
+</p>
+
+<p align="center">
+  <img src="assets/screenshot.png" alt="Winemaking Calculators Screenshot" width="100%">
 </p>
 
 ---
@@ -30,7 +34,7 @@ This repository gives you **clean, documented Python code** for every core winem
 
 | # | Calculator | What it does |
 |---|-----------|-------------|
-| 1 | 🧪 **SO₂ Manager** | Molecular SO₂, free SO₂ needed, addition amounts in g for K₂S₂O₅ / liquid SO₂ |
+| 1 | 🧪 **SO₂ Manager** | Molecular SO₂, free SO₂ needed, additions in g for K₂S₂O₅ / liquid SO₂ |
 | 2 | 🍬 **Sugar & Alcohol** | Brix → Potential Alcohol, SG → Brix, Chaptalization amounts |
 | 3 | 🧊 **Acidity Adjustment** | Tartaric acid addition (acidification), CaCO₃ deacidification |
 | 4 | 🌱 **Yeast & Nutrients** | GO-FERM rehydration, DAP/Fermaid-O YAN additions |
@@ -38,6 +42,15 @@ This repository gives you **clean, documented Python code** for every core winem
 | 6 | 🧹 **Fining Agents** | Bentonite, egg white, gelatine, isinglass, carbon additions |
 | 7 | 🫧 **Dissolved CO₂** | Henry's Law CO₂ estimates by temperature and wine style |
 | 8 | 🟤 **H₂S Treatment** | Copper sulfate (CuSO₄·5H₂O) addition for rotten egg removal |
+| 9 | 🧫 **MLF Tracker** | Malolactic Fermentation progress and pH/TA impact |
+| 10 | ❄️ **Cold Stabilization** | Würdig formula stabilization temp, duration, seeding, conductivity test |
+| 11 | 🍯 **Sorbate + SO₂** | Sweet wine chemical stabilization with EU legal limits check |
+| 12 | 🗺️ **Vineyard Comparison** | Score and compare 2-5 lots/vineyards using radar charts |
+| 13 | 📓 **Vintage Logbook** | Cellar logbook diary with filtering and CSV export |
+| 14 | 🍾 **Bottling Suite** | Bottle/case needs with transfer losses and thermal expansion check |
+| 15 | 🪵 **Oak & Tannins** | Oak alternative dosage (chips, cubes, staves) with extraction times |
+| 16 | 🧪 **Wine Fault Diagnosis** | Rule-based diagnosis based on sensory analysis symptoms |
+| 17 | 🏛 **Greek Varieties** | Analytical benchmark against optimal grape ranges (Xinomavro, Assyrtiko, etc.) |
 
 ---
 
