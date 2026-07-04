@@ -1,0 +1,7 @@
+*.pyc
+__pycache__/
+calculators/__pycache__/
+.streamlit/
+*.db
+*.csv
+*.pdf
