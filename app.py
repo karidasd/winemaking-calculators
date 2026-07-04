@@ -91,11 +91,11 @@ with st.sidebar:
         t("calc_so2"), t("calc_sugar"), t("calc_acid"), t("calc_yeast"),
         t("calc_blend"), t("calc_fining"), t("calc_co2"), t("calc_h2s"),
         t("calc_temp"), t("calc_ferment"), t("calc_harvest"),
-        "🧫 MLF Tracker", "❄️ Cold Stabilization", "🍯 Sorbate + SO₂",
-        "🗺️ Vineyard Comparison", "📓 Vintage Logbook",
+        t("calc_mlf"), t("calc_cold_stab"), t("calc_sorbate"),
+        t("calc_vineyard_comp"), t("calc_logbook"),
         t("calc_bottling"), t("calc_oak"), t("calc_faults"), t("calc_greek"), t("calc_vintage_comp"),
         t("calc_export"),
-    ], label_visibility="collapsed")
+    ],label_visibility="collapsed")
     st.markdown("<hr class='divider'>", unsafe_allow_html=True)
     st.markdown("""<div style='color:#6a5040;font-size:0.8rem;padding:8px;'>
     📚 <strong style='color:#a08060'>References:</strong><br>
@@ -438,7 +438,7 @@ elif calculator == t("calc_harvest"):
 # ─────────────────────────────────────────────────────────────────────────────
 # 12. MLF TRACKER
 # ─────────────────────────────────────────────────────────────────────────────
-elif calculator == "🧫 MLF Tracker":
+elif calculator == t("calc_mlf"):
     st.markdown("## 🧫 MLF Tracker (Malolactic Fermentation)")
     tab1, tab2 = st.tabs(["📊 Progress", "🔬 TA & pH Impact"])
     with tab1:
@@ -475,7 +475,7 @@ elif calculator == "🧫 MLF Tracker":
 # ─────────────────────────────────────────────────────────────────────────────
 # 13. COLD STABILIZATION
 # ─────────────────────────────────────────────────────────────────────────────
-elif calculator == "❄️ Cold Stabilization":
+elif calculator == t("calc_cold_stab"):
     st.markdown("## ❄️ Cold Stabilization")
     tab1, tab2 = st.tabs(["Target parameters", "Conductivity stability"])
     with tab1:
@@ -502,7 +502,7 @@ elif calculator == "❄️ Cold Stabilization":
 # ─────────────────────────────────────────────────────────────────────────────
 # 14. SORBATE + SO₂
 # ─────────────────────────────────────────────────────────────────────────────
-elif calculator == "🍯 Sorbate + SO₂":
+elif calculator == t("calc_sorbate"):
     st.markdown("## 🍯 Sorbate + SO₂ Combo")
     c1,c2,c3,c4 = st.columns(4)
     with c1: rs = st.number_input("Residual Sugar (g/L)", 5.0, 300.0, 40.0, 5.0)
@@ -519,7 +519,7 @@ elif calculator == "🍯 Sorbate + SO₂":
 # ─────────────────────────────────────────────────────────────────────────────
 # 15. VINEYARD COMPARISON
 # ─────────────────────────────────────────────────────────────────────────────
-elif calculator == "🗺️ Vineyard Comparison":
+elif calculator == t("calc_vineyard_comp"):
     st.markdown("## 🗺️ Vineyard Comparison")
     target_style = st.selectbox("Target Style", ["Red","White","Rosé","Sweet"])
     n_vineyards = st.slider("Vineyards to compare", 2, 5, 3)
@@ -543,7 +543,7 @@ elif calculator == "🗺️ Vineyard Comparison":
 # ─────────────────────────────────────────────────────────────────────────────
 # 16. VINTAGE LOGBOOK
 # ─────────────────────────────────────────────────────────────────────────────
-elif calculator == "📓 Vintage Logbook":
+elif calculator == t("calc_logbook"):
     st.markdown("## 📓 Vintage Logbook")
     with st.expander("➕ Add Logbook Entry", expanded=not st.session_state.vintage_logbook):
         c1,c2,c3 = st.columns(3)
@@ -614,8 +614,8 @@ elif calculator == t("calc_bottling"):
         exp = thermal_expansion(vol_exp, temp_bot, temp_store)
         
         c1, c2 = st.columns(2)
-        c1.metric("Total Volume Change", f"{exp['volume_change_l']::+f} L")
-        c2.metric("Change per 750ml Bottle", f"{exp['per_bottle_change_ml']::+f} mL")
+        c1.metric("Total Volume Change", f"{exp['volume_change_l']:+.2f} L")
+        c2.metric("Change per 750ml Bottle", f"{exp['per_bottle_change_ml']:+.2f} mL")
         
         if exp["is_expansion"]:
             st.warning(exp["warning"])
