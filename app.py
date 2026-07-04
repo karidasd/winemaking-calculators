@@ -35,6 +35,14 @@ defaults = {
     "pdf_calculations": [],
     "vintage_logbook": [],
     "vineyards": [],
+    "vintage_history": [
+        {"Year": 2023, "Variety": "Xinomavro", "Brix": 23.5, "pH": 3.22, "TA": 7.4},
+        {"Year": 2024, "Variety": "Xinomavro", "Brix": 24.0, "pH": 3.28, "TA": 7.1},
+        {"Year": 2025, "Variety": "Xinomavro", "Brix": 23.0, "pH": 3.19, "TA": 7.6},
+        {"Year": 2023, "Variety": "Assyrtiko", "Brix": 22.0, "pH": 2.95, "TA": 8.2},
+        {"Year": 2024, "Variety": "Assyrtiko", "Brix": 23.0, "pH": 3.02, "TA": 7.8},
+        {"Year": 2025, "Variety": "Assyrtiko", "Brix": 22.5, "pH": 2.98, "TA": 8.0},
+    ]
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -84,7 +92,9 @@ with st.sidebar:
         t("calc_blend"), t("calc_fining"), t("calc_co2"), t("calc_h2s"),
         t("calc_temp"), t("calc_ferment"), t("calc_harvest"),
         "🧫 MLF Tracker", "❄️ Cold Stabilization", "🍯 Sorbate + SO₂",
-        "🗺️ Vineyard Comparison", "📓 Vintage Logbook", t("calc_export"),
+        "🗺️ Vineyard Comparison", "📓 Vintage Logbook",
+        t("calc_bottling"), t("calc_oak"), t("calc_faults"), t("calc_greek"), t("calc_vintage_comp"),
+        t("calc_export"),
     ], label_visibility="collapsed")
     st.markdown("<hr class='divider'>", unsafe_allow_html=True)
     st.markdown("""<div style='color:#6a5040;font-size:0.8rem;padding:8px;'>
@@ -102,7 +112,7 @@ def record_calc(title, results, note=""):
     st.session_state.pdf_calculations.append({"title": title, "results": results, "note": note})
 
 # ─────────────────────────────────────────────────────────────────────────────
-# EXISTING CALCULATORS (carry-over from V2)
+# 1. SO2 MANAGER
 # ─────────────────────────────────────────────────────────────────────────────
 if calculator == t("calc_so2"):
     st.markdown(f"## {t('calc_so2')}")
@@ -138,6 +148,9 @@ if calculator == t("calc_so2"):
         c3.metric("NaHSO₃", f"{amounts['sodium_metabisulfite_g']} g")
         record_calc("SO₂ Addition", {"Addition": f"{add} mg/L", "Volume": f"{vol} L", "K₂S₂O₅": f"{amounts['potassium_metabisulfite_g']} g"})
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. SUGAR & ALCOHOL
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_sugar"):
     st.markdown(f"## {t('calc_sugar')}")
     tab1,tab2,tab3 = st.tabs(["🔢 Brix Conversions","🍚 Chaptalization","⚖️ SG → Brix"])
@@ -172,6 +185,9 @@ elif calculator == t("calc_sugar"):
         c2.metric(t("pot_alcohol"), f"{brix_to_potential_alcohol(bfsg)}% ABV")
         c3.metric("Sugar", f"{brix_to_sugar(bfsg)} g/L")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. ACIDITY
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_acid"):
     st.markdown(f"## {t('calc_acid')}")
     tab1,tab2 = st.tabs(["🔺 Acidification","🔻 Deacidification"])
@@ -201,6 +217,9 @@ elif calculator == t("calc_acid"):
             st.markdown(f'<div class="info-box">💡 {res2["note"]}</div>', unsafe_allow_html=True)
         else: st.success("✅ TA at target.")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. YEAST & NUTRIENTS
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_yeast"):
     st.markdown(f"## {t('calc_yeast')}")
     tab1,tab2 = st.tabs(["🧫 Yeast Rehydration","🌾 YAN / DAP"])
@@ -228,6 +247,9 @@ elif calculator == t("calc_yeast"):
             st.markdown(f'<div class="info-box">💡 {res["note"]}</div>', unsafe_allow_html=True)
         else: st.success("✅ YAN sufficient.")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. BLENDING
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_blend"):
     st.markdown(f"## {t('calc_blend')}")
     tab1,tab2 = st.tabs(["🧮 Blend Result","🎯 Pearson's Square"])
@@ -259,6 +281,9 @@ elif calculator == t("calc_blend"):
             c1.metric("Wine A", f"{res['wine_a_liters']} L ({res['wine_a_pct']}%)")
             c2.metric("Wine B", f"{res['wine_b_liters']} L ({res['wine_b_pct']}%)")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. FINING AGENTS
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_fining"):
     st.markdown(f"## {t('calc_fining')}")
     agent_labels = {k: f"{k.replace('_',' ').title()} — {v['purpose']}" for k,v in FINING_AGENTS.items()}
@@ -274,6 +299,9 @@ elif calculator == t("calc_fining"):
     c2.metric("Rate", res["rate"])
     c3.metric("Volume", f"{vf} L")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. DISSOLVED CO2
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_co2"):
     st.markdown(f"## {t('calc_co2')}")
     c1,c2 = st.columns(2)
@@ -285,6 +313,9 @@ elif calculator == t("calc_co2"):
     c2.metric("Henry's K", f"{res['henry_constant']}")
     c3.metric("Target CO₂", f"{res['target_range_g_l'][0]}–{res['target_range_g_l'][1]} g/L")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. H₂S TREATMENT
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_h2s"):
     st.markdown(f"## {t('calc_h2s')}")
     c1,c2 = st.columns(2)
@@ -297,6 +328,9 @@ elif calculator == t("calc_h2s"):
     c3.metric("CuSO₄·5H₂O", f"{res['cuso4_5h2o_mg']} mg")
     st.markdown(f'<div class="warning-box">⚠️ {res["legal_limit_note"]}</div>', unsafe_allow_html=True)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 9. TEMPERATURE CORRECTION
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_temp"):
     st.markdown(f"## {t('temp_title')}")
     tab1, tab2 = st.tabs(["🔬 Refractometer", "⚗️ Hydrometer"])
@@ -324,6 +358,9 @@ elif calculator == t("calc_temp"):
         c2.metric("Corrected SG", f"{csg:.4f}", delta=f"{round(csg-obs_sg,4):+.4f}")
         c3.metric("Corrected Brix", f"{specific_gravity_to_brix(csg)}°Bx")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 10. FERMENTATION TRACKER
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_ferment"):
     st.markdown(f"## {t('ferment_title')}")
     with st.expander(t("add_reading"), expanded=not st.session_state.fermentation_data):
@@ -358,6 +395,9 @@ elif calculator == t("calc_ferment"):
         if st.button(t("clear_data")): st.session_state.fermentation_data = []; st.rerun()
     else: st.info("📋 No data yet. Add your first reading!")
 
+# ─────────────────────────────────────────────────────────────────────────────
+# 11. HARVEST PLANNER
+# ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_harvest"):
     st.markdown(f"## {t('harvest_title')}")
     c1,c2,c3 = st.columns(3)
@@ -396,11 +436,10 @@ elif calculator == t("calc_harvest"):
     st.markdown(f'<div class="action-item">🧫 <strong>Yeast:</strong> {yeast_res["yeast_g"]}g + {yeast_res["go_ferm_g"]}g GO-FERM in {yeast_res["rehydration_water_ml"]}mL water @ 37-40°C</div>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 🧫 MLF TRACKER
+# 12. MLF TRACKER
 # ─────────────────────────────────────────────────────────────────────────────
 elif calculator == "🧫 MLF Tracker":
     st.markdown("## 🧫 MLF Tracker (Malolactic Fermentation)")
-    st.markdown("*Track the conversion of sharp malic acid to soft lactic acid.*")
     tab1, tab2 = st.tabs(["📊 Progress", "🔬 TA & pH Impact"])
     with tab1:
         c1,c2 = st.columns(2)
@@ -409,27 +448,15 @@ elif calculator == "🧫 MLF Tracker":
             malic_curr = st.number_input("Current Malic Acid (g/L)", 0.0, 8.0, 1.5, 0.1)
         with c2:
             st.markdown("**Chromatography Guide:**")
-            st.markdown("""
-            - 🔴 Dark spot = High malic (>1 g/L)
-            - 🟡 Faint spot = Nearly complete (<0.5 g/L)  
-            - ✅ No spot = Complete (<0.15 g/L)
-            """)
+            st.markdown("- 🔴 Dark spot = High malic\n- 🟡 Faint spot = Nearly complete\n- ✅ No spot = Complete (<0.15 g/L)")
         res = mlf_progress(malic_init, malic_curr)
         st.markdown(f"### {res['status']}")
-        progress_val = res["progress_pct"] / 100
-        st.progress(progress_val)
+        st.progress(res["progress_pct"] / 100)
         c1,c2,c3,c4 = st.columns(4)
         c1.metric("Progress", f"{res['progress_pct']}%")
         c2.metric("Malic Consumed", f"{res['malic_consumed_g_l']} g/L")
         c3.metric("Lactic Produced", f"{res['lactic_produced_g_l']} g/L")
         c4.metric("TA Reduction", f"{res['ta_reduction_g_l']} g/L")
-        if res["complete"]:
-            st.success("✅ MLF is complete! Monitor with chromatography and stabilize with SO₂.")
-            st.markdown('<div class="info-box">💡 Add SO₂ immediately to stabilize and prevent spoilage. Target molecular SO₂: 0.5 mg/L (red) or 0.8 mg/L (white).</div>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<div class="warning-box">⚠️ MLF still in progress ({malic_curr} g/L malic remaining). Do NOT add SO₂ until complete.</div>', unsafe_allow_html=True)
-        record_calc("MLF Progress", {"Initial Malic": f"{malic_init} g/L", "Current Malic": f"{malic_curr} g/L", "Progress": f"{res['progress_pct']}%", "Status": res["status"]})
-
     with tab2:
         c1,c2 = st.columns(2)
         with c1:
@@ -441,17 +468,16 @@ elif calculator == "🧫 MLF Tracker":
         impact = mlf_ta_ph_impact(mi2, mc2, init_ph2, init_ta2)
         c1,c2,c3,c4 = st.columns(4)
         c1.metric("Initial TA", f"{init_ta2} g/L")
-        c2.metric("Estimated New TA", f"{impact['estimated_new_ta']} g/L", delta=f"-{impact['ta_drop']}")
+        c2.metric("Estimated TA", f"{impact['estimated_new_ta']} g/L", delta=f"-{impact['ta_drop']}")
         c3.metric("Initial pH", f"{init_ph2}")
-        c4.metric("Estimated New pH", f"{impact['estimated_new_ph']}", delta=f"+{impact['ph_rise']}")
+        c4.metric("Estimated pH", f"{impact['estimated_new_ph']}", delta=f"+{impact['ph_rise']}")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ❄️ COLD STABILIZATION
+# 13. COLD STABILIZATION
 # ─────────────────────────────────────────────────────────────────────────────
 elif calculator == "❄️ Cold Stabilization":
     st.markdown("## ❄️ Cold Stabilization")
-    st.markdown("*Prevent tartrate crystals in the bottle by cold stabilizing before bottling.*")
-    tab1, tab2 = st.tabs(["🌡️ Stabilization Parameters", "🔬 Conductivity Test"])
+    tab1, tab2 = st.tabs(["Target parameters", "Conductivity stability"])
     with tab1:
         c1,c2,c3 = st.columns(3)
         with c1: alc = st.number_input("Alcohol (% ABV)", 8.0, 17.0, 13.0, 0.1)
@@ -459,185 +485,316 @@ elif calculator == "❄️ Cold Stabilization":
         with c3: vol_cs = st.number_input(t("volume_l"), 100.0, 500000.0, 5000.0, 500.0, key="vol_cs")
         res = cold_stabilization(alc, ta_cs, vol_cs)
         c1,c2,c3 = st.columns(3)
-        c1.metric("Target Temp (Würdig)", f"{res['stabilization_temp_c']}°C")
+        c1.metric("Stabilization Temp", f"{res['stabilization_temp_c']}°C")
         c2.metric("Traditional Duration", f"{res['traditional_duration_days']} days")
-        c3.metric("Mini-Contact Method", f"{res['mini_contact_duration_hours']} hours")
-        st.markdown(f"""
-        <div class="result-card">
-          <h3>📦 KHT Seeding (Mini-Contact Method)</h3>
-          <p style='color:#e8d5b7'>Add <strong style='color:#c9956a'>{res['kht_seed_g']} g</strong> of KHT (cream of tartar) seeds at <strong style='color:#c9956a'>{res['stabilization_temp_c']}°C</strong> and stir for 3-4 hours.</p>
-          <p style='color:#8B949E;font-size:0.85rem;margin-top:8px'>Rate: {res['kht_seed_rate']} | Expected TA reduction: ~{res['expected_ta_reduction_g_l']} g/L</p>
-        </div>""", unsafe_allow_html=True)
-        st.markdown(f'<div class="info-box">💡 {res["note"]}</div>', unsafe_allow_html=True)
-        record_calc("Cold Stabilization", {"Target Temp": f"{res['stabilization_temp_c']}°C", "Duration": f"{res['traditional_duration_days']} days", "KHT Seeds": f"{res['kht_seed_g']} g"})
+        c3.metric("Mini-Contact Duration", f"{res['mini_contact_duration_hours']} hours")
+        st.markdown(f'<div class="info-box">💡 Add {res["kht_seed_g"]} g of KHT seeds at {res["stabilization_temp_c"]}°C.</div>', unsafe_allow_html=True)
     with tab2:
-        st.markdown("*The conductivity test measures how much KHT precipitated after cooling.*")
         c1,c2 = st.columns(2)
-        with c1: cond_before = st.number_input("Conductivity BEFORE cooling (mS/cm)", 0.5, 5.0, 2.0, 0.01, format="%.3f")
-        with c2: cond_after = st.number_input("Conductivity AFTER cooling (mS/cm)", 0.5, 5.0, 1.85, 0.01, format="%.3f")
+        with c1: cond_before = st.number_input("Conductivity before stabilizing (mS/cm)", 0.5, 5.0, 2.0, 0.01)
+        with c2: cond_after = st.number_input("Conductivity after stabilizing (mS/cm)", 0.5, 5.0, 1.85, 0.01)
         res2 = conductivity_test(cond_before, cond_after)
         st.markdown(f"### {res2['verdict']}")
-        c1,c2,c3 = st.columns(3)
-        c1.metric("Drop", f"{res2['conductivity_drop_ms']} mS/cm")
+        c1,c2 = st.columns(2)
+        c1.metric("Conductivity drop", f"{res2['conductivity_drop_ms']} mS/cm")
         c2.metric("Drop %", f"{res2['conductivity_drop_pct']}%")
-        c3.metric("Verdict", res2['verdict'])
-        st.markdown(f'<div class="info-box">💡 {res2["action"]}</div>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 🍯 SORBATE + SO₂
+# 14. SORBATE + SO₂
 # ─────────────────────────────────────────────────────────────────────────────
 elif calculator == "🍯 Sorbate + SO₂":
-    st.markdown("## 🍯 Sorbate + SO₂ (Sweet Wine Stabilization)")
-    st.markdown("*Prevent re-fermentation of residual sugars in sweet and off-dry wines.*")
+    st.markdown("## 🍯 Sorbate + SO₂ Combo")
     c1,c2,c3,c4 = st.columns(4)
     with c1: rs = st.number_input("Residual Sugar (g/L)", 5.0, 300.0, 40.0, 5.0)
-    with c2: ph_sorb = st.number_input("Wine pH", 2.8, 4.5, 3.3, 0.05, key="ph_sorb")
+    with c2: ph_sorb = st.number_input("pH", 2.8, 4.5, 3.3, 0.05, key="ph_sorb")
     with c3: vol_sorb = st.number_input(t("volume_l"), 100.0, 500000.0, 1000.0, 100.0, key="vol_sorb")
-    with c4: style_sorb = st.selectbox("Wine Style", ["off-dry","demi-sec","sweet"])
+    with c4: style_sorb = st.selectbox("Style", ["off-dry","demi-sec","sweet"])
     res = sorbate_so2_combo(rs, ph_sorb, vol_sorb, style_sorb)
     c1,c2,c3 = st.columns(3)
-    c1.metric("K-Sorbate Total", f"{res['potassium_sorbate_total_g']} g")
+    c1.metric("K-Sorbate to add", f"{res['potassium_sorbate_total_g']} g")
     c2.metric("K-Sorbate Rate", f"{res['potassium_sorbate_mg_l']} mg/L")
-    c3.metric("Free SO₂ Needed", f"{res['free_so2_needed_mg_l']} mg/L")
-    c1,c2 = st.columns(2)
-    c1.metric("K₂S₂O₅ to add", f"{res['k2s2o5_g']} g")
-    c2.metric("EU Legal Limit", res["eu_legal_limit"])
-    st.markdown(f'<div class="danger-box">{res["warning"]}</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="info-box">💡 {res["note"]}</div>', unsafe_allow_html=True)
-    record_calc("Sorbate + SO₂", {"Residual Sugar": f"{rs} g/L", "K-Sorbate": f"{res['potassium_sorbate_total_g']} g", "Free SO₂ Needed": f"{res['free_so2_needed_mg_l']} mg/L", "K₂S₂O₅": f"{res['k2s2o5_g']} g"})
+    c3.metric("Free SO₂ needed", f"{res['free_so2_needed_mg_l']} mg/L")
+    st.markdown(f'<div class="danger-box">⚠️ {res["warning"]}</div>', unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 🗺️ VINEYARD COMPARISON
+# 15. VINEYARD COMPARISON
 # ─────────────────────────────────────────────────────────────────────────────
 elif calculator == "🗺️ Vineyard Comparison":
-    st.markdown("## 🗺️ Multi-Vineyard Comparison")
-    st.markdown("*Score and compare up to 5 vineyards/lots side by side.*")
-    target_style = st.selectbox("Target Wine Style", ["Red","White","Rosé","Sweet"])
-    n_vineyards = st.slider("Number of Vineyards", 2, 5, 3)
+    st.markdown("## 🗺️ Vineyard Comparison")
+    target_style = st.selectbox("Target Style", ["Red","White","Rosé","Sweet"])
+    n_vineyards = st.slider("Vineyards to compare", 2, 5, 3)
     vineyard_data = []
     cols = st.columns(n_vineyards)
     for i, col in enumerate(cols):
         with col:
             st.markdown(f"**Vineyard {i+1}**")
-            vname = st.text_input("Name", value=f"Lot {i+1}", key=f"vname_{i}")
+            vname = st.text_input("Name", f"Lot {i+1}", key=f"vname_{i}")
             vbrix = st.number_input("Brix", 14.0, 36.0, 22.0+i*0.5, 0.5, key=f"vbrix_{i}")
             vph = st.number_input("pH", 2.8, 4.5, 3.3+i*0.05, 0.05, key=f"vph_{i}")
             vta = st.number_input("TA (g/L)", 3.0, 12.0, 6.5-i*0.2, 0.1, key=f"vta_{i}")
             vyan = st.number_input("YAN (mg/L)", 0.0, 400.0, 120.0+i*20, 10.0, key=f"vyan_{i}")
             vineyard_data.append({"name": vname, "brix": vbrix, "ph": vph, "ta": vta, "yan": vyan})
-
     results_v = [evaluate_vineyard(v["name"], v["brix"], v["ph"], v["ta"], v["yan"], target_style) for v in vineyard_data]
     results_v.sort(key=lambda x: x["score"], reverse=True)
-
-    # Radar chart
-    categories = ["Brix", "pH", "TA", "YAN"]
-    targets = WINE_STYLE_TARGETS[target_style]
-
-    def normalize(val, lo, hi):
-        return round(min(100, max(0, 100 - abs(((val - lo) / (hi - lo)) - 0.5) * 200)), 1)
-
-    fig = go.Figure()
-    colors = ["#c9956a","#5a8fd0","#6aad6a","#d06a8f","#8f6ad0"]
-    for i, r in enumerate(results_v):
-        scores_radar = [
-            normalize(r["brix"], *targets["brix"]),
-            normalize(r["ph"], *targets["ph"]),
-            normalize(r["ta"], *targets["ta"]),
-            normalize(r["yan"], *targets["yan"]),
-        ]
-        fig.add_trace(go.Scatterpolar(r=scores_radar + [scores_radar[0]], theta=categories + [categories[0]],
-                                      fill='toself', name=r["name"], line=dict(color=colors[i % len(colors)], width=2),
-                                      fillcolor=colors[i % len(colors)].replace("#","rgba(").replace("c9956a","201,149,106,0.1)").replace("5a8fd0","90,143,208,0.1)")))
-    fig.update_layout(template="plotly_dark", paper_bgcolor="rgba(15,8,12,0.9)",
-                      polar=dict(bgcolor="rgba(20,10,18,0.8)", radialaxis=dict(range=[0,100], gridcolor="rgba(180,100,80,0.2)"),
-                                 angularaxis=dict(gridcolor="rgba(180,100,80,0.2)")),
-                      font=dict(color="#c9956a"), title="🍇 Vineyard Comparison Radar", showlegend=True)
-    st.plotly_chart(fig, use_container_width=True)
-
-    # Summary table
     st.markdown("### 🏆 Rankings")
-    for rank, r in enumerate(results_v):
-        medal = ["🥇","🥈","🥉","4️⃣","5️⃣"][rank]
-        st.markdown(f"""
-        <div class="logbook-entry">
-          <span class="grade-badge grade-{r['grade']}">{r['grade']}</span>
-          {medal} <strong style='color:#c9956a'>{r['name']}</strong>
-          <span style='color:#8B949E;margin-left:16px'>Score: {r['score']}/100</span>
-          <span style='margin-left:16px'>Brix: {r['brix']}</span>
-          <span style='margin-left:8px'>{r['flags']['brix']}</span>
-          <span style='margin-left:12px'>pH: {r['ph']}</span>
-          <span style='margin-left:4px'>{r['flags']['ph']}</span>
-          <span style='margin-left:12px'>TA: {r['ta']}</span>
-          <span style='margin-left:4px'>{r['flags']['ta']}</span>
-          <span style='margin-left:12px'>YAN: {r['yan']}</span>
-          <span style='margin-left:4px'>{r['flags']['yan']}</span>
-        </div>""", unsafe_allow_html=True)
+    for r in results_v:
+        st.markdown(f"<div class='logbook-entry'><span class='grade-badge grade-{r['grade']}'>{r['grade']}</span> <strong>{r['name']}</strong> — Score: {r['score']}/100</div>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 📓 VINTAGE LOGBOOK
+# 16. VINTAGE LOGBOOK
 # ─────────────────────────────────────────────────────────────────────────────
 elif calculator == "📓 Vintage Logbook":
     st.markdown("## 📓 Vintage Logbook")
-    st.markdown("*Record every event, treatment, and observation during harvest and winemaking.*")
-
     with st.expander("➕ Add Logbook Entry", expanded=not st.session_state.vintage_logbook):
         c1,c2,c3 = st.columns(3)
         with c1:
             log_date = st.date_input("Date", value=date.today(), key="log_date")
-            log_lot = st.text_input("Lot / Tank", placeholder="e.g. Tank 1 — Xinomavro", key="log_lot")
+            log_lot = st.text_input("Lot / Tank", placeholder="e.g. Tank 1", key="log_lot")
         with c2:
-            log_category = st.selectbox("Category", ["📥 Reception","🧪 Chemistry","➕ Treatment","🌡️ Temperature","📊 Analysis","🚰 Racking","📝 Note"], key="log_cat")
+            log_category = st.selectbox("Category", ["📥 Reception","🧪 Chemistry","➕ Treatment","🌡️ Temperature","📊 Analysis","🚰 Racking","📝 Note"])
             log_operator = st.text_input("Operator", placeholder="Name", key="log_op")
-        with c3:
-            log_entry = st.text_area("Description", placeholder="Describe the event or treatment...", key="log_entry", height=100)
-        if st.button("💾 Save Entry"):
+        with c3: log_entry = st.text_area("Description", key="log_entry")
+        if st.button("Save Entry"):
             if log_entry.strip():
-                st.session_state.vintage_logbook.append({
-                    "date": str(log_date),
-                    "lot": log_lot,
-                    "category": log_category,
-                    "operator": log_operator,
-                    "entry": log_entry,
-                })
-                st.success("✅ Entry saved!")
+                st.session_state.vintage_logbook.append({"date": str(log_date), "lot": log_lot, "category": log_category, "operator": log_operator, "entry": log_entry})
+                st.success("Saved!")
                 st.rerun()
-            else:
-                st.warning("Please write a description.")
-
     if st.session_state.vintage_logbook:
-        # Filter
-        all_lots = list(set(e["lot"] for e in st.session_state.vintage_logbook if e["lot"]))
-        filter_lot = st.selectbox("Filter by Lot", ["All"] + all_lots, key="filter_lot")
-
-        entries = st.session_state.vintage_logbook
-        if filter_lot != "All":
-            entries = [e for e in entries if e["lot"] == filter_lot]
-        entries = sorted(entries, key=lambda x: x["date"], reverse=True)
-
-        st.markdown(f"**{len(entries)} entries** {'for ' + filter_lot if filter_lot != 'All' else 'total'}")
-        for e in entries:
-            st.markdown(f"""
-            <div class="logbook-entry">
-              <span style='color:#8B949E;font-size:0.85rem'>{e['date']}</span>
-              <span style='color:#c9956a;margin-left:12px;font-weight:600'>{e['lot']}</span>
-              <span style='margin-left:8px'>{e['category']}</span>
-              {'<span style="color:#8B949E;font-size:0.8rem;margin-left:8px">— ' + e['operator'] + '</span>' if e['operator'] else ''}
-              <br><span style='color:#e8d5b7;font-size:0.9rem;margin-top:4px;display:block'>{e['entry']}</span>
-            </div>""", unsafe_allow_html=True)
-
-        # Export logbook as CSV
-        df_log = pd.DataFrame(entries)
-        csv = df_log.to_csv(index=False).encode("utf-8")
-        st.download_button("📥 Export Logbook as CSV", data=csv,
-                           file_name=f"vintage_logbook_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv")
-        if st.button("🗑️ Clear Logbook"):
-            st.session_state.vintage_logbook = []
-            st.rerun()
-    else:
-        st.info("📋 No entries yet. Start recording your winemaking events!")
+        st.dataframe(pd.DataFrame(st.session_state.vintage_logbook), use_container_width=True)
+        if st.button("Clear Logbook"): st.session_state.vintage_logbook = []; st.rerun()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 📄 EXPORT PDF
+# 17. BOTTLING SUITE (V4)
+# ─────────────────────────────────────────────────────────────────────────────
+elif calculator == t("calc_bottling"):
+    st.markdown(f"## {t('bottling_title')}")
+    st.markdown(f"*{t('bottling_subtitle')}*")
+    
+    tab1, tab2 = st.tabs(["📦 Bottle & Case Needs", "🌡️ Thermal Expansion"])
+    
+    with tab1:
+        c1, c2, c3 = st.columns(3)
+        with c1: total_volume = st.number_input("Total Bulk Volume (L)", 10.0, 100000.0, 1000.0, 100.0)
+        with c2: bottle_size = st.selectbox("Bottle Size (mL)", [750.0, 375.0, 1500.0, 500.0])
+        with c3: loss_rate = st.slider("Expected Loss (%)", 0.0, 10.0, 2.0, 0.5)
+        
+        bn = bottles_needed(total_volume, bottle_size, loss_rate)
+        
+        st.markdown(f"""
+        <div class="result-card">
+          <h3>📦 Packaging Breakdown</h3>
+          <div class="metric-row">
+            <span class="metric-value">{bn['total_bottles']}</span>
+            <span class="metric-unit">bottles</span>
+          </div>
+          <p style="color:#8B949E; margin-top:8px;">
+            Estimated loss: <strong>{bn['lost_volume_l']} L</strong> | Net bottling volume: <strong>{bn['net_bottling_volume_l']} L</strong>
+          </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        c1, c2 = st.columns(2)
+        c1.metric("Cases of 12", f"{bn['cases_of_12']} cases (+ {bn['remaining_bottles_12']} bottles)")
+        c2.metric("Cases of 6", f"{bn['cases_of_6']} cases (+ {bn['remaining_bottles_6']} bottles)")
+        
+        record_calc("Bottling Plan", {
+            "Total Volume": f"{total_volume} L",
+            "Bottle Size": f"{bottle_size} mL",
+            "Total Bottles Required": bn['total_bottles'],
+            "12-bottle Cases": bn['cases_of_12'],
+        })
+
+    with tab2:
+        st.markdown("*Calculate expansion/contraction risks based on temperature change.*")
+        c1, c2, c3 = st.columns(3)
+        with c1: vol_exp = st.number_input("Bulk Volume (L)", 10.0, 100000.0, 1000.0, 100.0, key="vol_exp")
+        with c2: temp_bot = st.number_input("Bottling Temp (°C)", 5.0, 30.0, 14.0, 1.0)
+        with c3: temp_store = st.number_input("Max Storage/Transit Temp (°C)", 5.0, 45.0, 32.0, 1.0)
+        
+        exp = thermal_expansion(vol_exp, temp_bot, temp_store)
+        
+        c1, c2 = st.columns(2)
+        c1.metric("Total Volume Change", f"{exp['volume_change_l']::+f} L")
+        c2.metric("Change per 750ml Bottle", f"{exp['per_bottle_change_ml']::+f} mL")
+        
+        if exp["is_expansion"]:
+            st.warning(exp["warning"])
+        else:
+            st.info(exp["warning"])
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 18. OAK & TANNINS (V4)
+# ─────────────────────────────────────────────────────────────────────────────
+elif calculator == t("calc_oak"):
+    st.markdown(f"## {t('oak_title')}")
+    st.markdown(f"*{t('oak_subtitle')}*")
+    
+    c1, c2, c3 = st.columns(3)
+    with c1: volume_oak = st.number_input("Wine Volume (L)", 10.0, 500000.0, 1000.0, 100.0, key="vol_oak")
+    with c2: format_oak = st.selectbox("Oak Alternative Format", ["chips", "cubes", "staves"])
+    with c3:
+        default_rate = {"chips": 2.0, "cubes": 4.0, "staves": 1.5}[format_oak]
+        rate_oak = st.number_input("Dosage Rate (g/L)", 0.1, 10.0, default_rate, 0.1)
+        
+    od = oak_dosage(volume_oak, rate_oak, format_oak)
+    
+    st.markdown(f"""
+    <div class="result-card">
+      <h3>🪵 Oak Dose Plan</h3>
+      <div class="metric-row">
+        <span class="metric-value">{od['total_kg']}</span>
+        <span class="metric-unit">kg total</span>
+      </div>
+      <p style="color:#c9956a; font-weight:600; margin-top:8px;">
+        Format: {format_oak.title()} | Extraction Time: {od['extraction_time']}
+      </p>
+      <p style="color:#8B949E; font-size:0.9rem;">
+        {od['note']}
+      </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if "staves_needed" in od:
+        st.metric("Estimated Staves Needed", f"{od['staves_needed']} (assuming ~250g per stave)")
+        
+    record_calc("Oak Treatment Plan", {
+        "Format": format_oak.title(),
+        "Dosage Rate": f"{rate_oak} g/L",
+        "Total Oak": f"{od['total_kg']} kg",
+        "Extraction time": od['extraction_time']
+    })
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 19. WINE FAULT DIAGNOSIS (V4)
+# ─────────────────────────────────────────────────────────────────────────────
+elif calculator == t("calc_faults"):
+    st.markdown(f"## {t('calc_faults')}")
+    st.markdown(f"*{t('faults_subtitle')}*")
+    
+    st.markdown("### 👃 Select Symptoms Observed:")
+    
+    symptoms_pool = []
+    for f in WINE_FAULTS:
+        symptoms_pool.extend(f["symptoms"])
+    symptoms_pool = sorted(list(set(symptoms_pool)))
+    
+    selected_syms = st.multiselect("Symptoms", [s.replace("_", " ").title() for s in symptoms_pool])
+    
+    if selected_syms:
+        # Convert back to internal symptom keys
+        internal_syms = [s.lower().replace(" ", "_") for s in selected_syms]
+        diagnoses = diagnose_fault(internal_syms)
+        
+        if diagnoses:
+            st.markdown("### 📋 Diagnosis Report")
+            for d in diagnoses:
+                st.markdown(f"""
+                <div class="logbook-entry" style="border-left: 4px solid #c03030;">
+                  <h4 style="color:#FF6B6B; font-family:'Inter',sans-serif; margin-bottom:6px;">
+                    {d['name']} ({d['confidence']}% Confidence)
+                  </h4>
+                  <p><strong>Common symptoms match:</strong> {", ".join(d['common_symptoms'])}</p>
+                  <p style="margin-top:6px;"><strong>Cause:</strong> {d['cause']}</p>
+                  <p style="color:#90c090; margin-top:6px;"><strong>💡 Prevention:</strong> {d['prevention']}</p>
+                  <p style="color:#c0a060; margin-top:4px;"><strong>🧪 Cellar Treatment:</strong> {d['treatment']}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("No matching faults found for the selected symptoms.")
+    else:
+        st.info("Select one or more symptoms from the dropdown above to run diagnosis.")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 20. GREEK VARIETIES (V4)
+# ─────────────────────────────────────────────────────────────────────────────
+elif calculator == t("calc_greek"):
+    st.markdown(f"## {t('greek_title')}")
+    st.markdown(f"*{t('greek_subtitle')}*")
+    
+    c1, c2 = st.columns([1, 2])
+    with c1:
+        selected_variety = st.selectbox("Greek Grape Variety", list(GREEK_VARIETIES.keys()))
+        var_data = GREEK_VARIETIES[selected_variety]
+        st.markdown(f"""
+        <div class="result-card">
+          <h3 style="color:#c9956a !important; margin-bottom:8px;">{selected_variety} ({var_data['style']})</h3>
+          <p style="font-size:0.92rem; color:#e8d5b7; line-height:1.5;">{var_data['description']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with c2:
+        st.markdown("### 📊 Benchmark Your Lot Metric")
+        c1, c2, c3 = st.columns(3)
+        with c1: my_brix = st.number_input("My Lot Brix", 14.0, 35.0, 23.0)
+        with c2: my_ph = st.number_input("My Lot pH", 2.8, 4.5, 3.25)
+        with c3: my_ta = st.number_input("My Lot TA (g/L)", 3.0, 12.0, 7.0)
+        
+        # Benchmarking visualization
+        metrics = ["Brix", "pH", "TA"]
+        my_vals = [my_brix, my_ph, my_ta]
+        opt_ranges = [var_data["optimal_brix"], var_data["optimal_ph"], var_data["optimal_ta"]]
+        
+        st.markdown("#### Comparison to Optimal Harvest Range:")
+        for met, val, (lo, hi) in zip(metrics, my_vals, opt_ranges):
+            status = "🟢 Within Range"
+            color = "#3FB950"
+            if val < lo:
+                status = f"🔻 Low (optimal: {lo}-{hi})"
+                color = "#FF8C42"
+            elif val > hi:
+                status = f"🔺 High (optimal: {lo}-{hi})"
+                color = "#F85149"
+                
+            st.markdown(f"""
+            <div style="background:rgba(30,15,25,0.4); border-left:3px solid {color}; padding:8px 12px; margin-bottom:6px; border-radius: 0 6px 6px 0;">
+              <strong style="color:#c9956a;">{met}:</strong> {val} | <span style="color:{color}; font-weight:600;">{status}</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 21. VINTAGE COMPARISON (V4)
+# ─────────────────────────────────────────────────────────────────────────────
+elif calculator == t("calc_vintage_comp"):
+    st.markdown(f"## 📊 Vintage Comparison Dashboard")
+    st.markdown("*Track and analyze vintage variations over multiple harvest years.*")
+    
+    with st.expander("➕ Add Historic Vintage Log"):
+        c1, c2, c3, c4 = st.columns(4)
+        with c1: v_year = st.number_input("Year", 2000, 2030, 2026)
+        with c2: v_var = st.selectbox("Variety", list(GREEK_VARIETIES.keys()))
+        with c3: v_brix = st.number_input("Harvest Brix", 14.0, 35.0, 23.0, key="vbrix")
+        with c4: v_ph = st.number_input("Harvest pH", 2.8, 4.5, 3.2, key="vph")
+        v_ta = st.number_input("Harvest TA (g/L)", 3.0, 12.0, 7.0, key="vta")
+        
+        if st.button("Add Vintage Data"):
+            st.session_state.vintage_history.append({
+                "Year": v_year, "Variety": v_var, "Brix": v_brix, "pH": v_ph, "TA": v_ta
+            })
+            st.success("Vintage data added!")
+            st.rerun()
+            
+    if st.session_state.vintage_history:
+        df_hist = pd.DataFrame(st.session_state.vintage_history)
+        df_hist = df_hist.sort_values("Year")
+        
+        vars_available = df_hist["Variety"].unique()
+        sel_var = st.selectbox("Select Variety to Plot", vars_available)
+        
+        df_filtered = df_hist[df_hist["Variety"] == sel_var]
+        
+        if not df_filtered.empty:
+            fig = px.line(df_filtered, x="Year", y=["Brix", "TA", "pH"], markers=True, 
+                          title=f"📈 Vintage Trends for {sel_var}",
+                          color_discrete_sequence=["#c9956a", "#5a8fd0", "#6aad6a"])
+            fig.update_layout(template="plotly_dark", paper_bgcolor="rgba(15,8,12,0.9)", plot_bgcolor="rgba(20,10,18,0.8)", font=dict(color="#c9956a"))
+            st.plotly_chart(fig, use_container_width=True)
+            
+            st.dataframe(df_filtered, use_container_width=True, hide_index=True)
+        else:
+            st.info("No historical logs found for this variety.")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 22. EXPORT PDF
 # ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_export"):
     st.markdown(f"## {t('export_title')}")
@@ -665,5 +822,5 @@ elif calculator == t("calc_export"):
 st.markdown("<hr class='divider'>", unsafe_allow_html=True)
 st.markdown(f"""
 <p style='text-align:center;color:#4a3020;font-size:0.8rem;'>
-  🍷 Winemaking Calculators v3.0 | Built with ❤️ by <a href='https://github.com/karidasd' style='color:#7a5040;'>DarkAIs</a> | {t('footer')}
+  🍷 Winemaking Calculators v4.0 | Built with ❤️ by <a href='https://github.com/karidasd' style='color:#7a5040;'>DarkAIs</a> | {t('footer')}
 </p>""", unsafe_allow_html=True)

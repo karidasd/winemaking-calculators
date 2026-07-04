@@ -14,4 +14,12 @@ from .advanced import (
     sorbate_so2_combo,
     evaluate_vineyard, WINE_STYLE_TARGETS,
 )
-__version__ = "3.0.0"
+from .ultimate import (
+    GREEK_VARIETIES,
+    bottles_needed,
+    thermal_expansion,
+    oak_dosage,
+    diagnose_fault,
+    WINE_FAULTS,
+)
+__version__ = "4.0.0"
