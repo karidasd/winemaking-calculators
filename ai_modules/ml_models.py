@@ -3,10 +3,10 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
 def predict_fermentation_curve(historical_data, current_brix, target_brix=0.0):
-    \"\"\"
+    """
     Predicts the fermentation curve using Polynomial Regression based on recent readings.
     historical_data: List of dicts [{'day': int, 'brix': float}, ...]
-    \"\"\"
+    """
     if len(historical_data) < 2:
         return {"error": "Need at least 2 data points for prediction."}
 
