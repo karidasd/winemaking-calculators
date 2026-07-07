@@ -9,6 +9,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from calculators import *
 from translations import t, TRANSLATIONS
 from pdf_report import generate_pdf
+from ai_modules.ml_models import predict_fermentation_curve
+from ai_modules.llm_agents import generate_blending_advice
 
 # ─── Page Config ──────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -94,6 +96,7 @@ with st.sidebar:
         t("calc_mlf"), t("calc_cold_stab"), t("calc_sorbate"),
         t("calc_vineyard_comp"), t("calc_logbook"),
         t("calc_bottling"), t("calc_oak"), t("calc_faults"), t("calc_greek"), t("calc_vintage_comp"),
+        t("calc_ai_ferment"), t("calc_ai_blend"),
         t("calc_export"),
     ],label_visibility="collapsed")
     st.markdown("<hr class='divider'>", unsafe_allow_html=True)
@@ -794,7 +797,97 @@ elif calculator == t("calc_vintage_comp"):
             st.info("No historical logs found for this variety.")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 22. EXPORT PDF
+# 22. AI FERMENTATION PREDICTOR (SCIKIT-LEARN)
+# ─────────────────────────────────────────────────────────────────────────────
+elif calculator == t("calc_ai_ferment"):
+    st.markdown(f"## 🤖 AI Fermentation Predictor")
+    st.markdown("*Machine Learning forecasting using Polynomial Regression.*")
+    
+    if not st.session_state.fermentation_data:
+        st.warning("⚠️ No fermentation data found. Please add data in the 'Fermentation Tracker' first.")
+    else:
+        df = pd.DataFrame(st.session_state.fermentation_data)
+        df["date"] = pd.to_datetime(df["date"])
+        df = df.sort_values("date")
+        
+        # Convert dates to 'days since start'
+        start_date = df["date"].iloc[0]
+        hist_data = []
+        for i, row in df.iterrows():
+            days_passed = (row["date"] - start_date).days
+            hist_data.append({"day": days_passed, "brix": float(row["brix"])})
+            
+        current_brix = hist_data[-1]["brix"]
+        
+        c1, c2 = st.columns(2)
+        with c1: target_brix = st.number_input("Target Brix (Dryness)", -2.0, 5.0, 0.0, 0.5)
+        with c2:
+            st.markdown(f"**Current Brix:** {current_brix}°Bx")
+            st.markdown(f"**Days active:** {hist_data[-1]['day']} days")
+            
+        if st.button("🚀 Run AI Forecast"):
+            with st.spinner("Training model..."):
+                res = predict_fermentation_curve(hist_data, current_brix, target_brix)
+                
+            if "error" in res:
+                st.error(res["error"])
+            else:
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Predicted Days to Dry (Total)", f"~{res['days_to_dry_total']} days" if res['days_to_dry_total'] else "Unknown")
+                c2.metric("Days Remaining", f"~{res['days_remaining']} days" if res['days_remaining'] else "Unknown")
+                
+                risk_color = {"Low": "green", "Medium": "orange", "High": "red"}[res["stuck_risk"]]
+                c3.markdown(f"**Stuck Risk:** <span style='color:{risk_color}; font-weight:bold;'>{res['stuck_risk']}</span>", unsafe_allow_html=True)
+                
+                # Plot
+                pred_df = pd.DataFrame(res["projected_curve"])
+                fig = go.Figure()
+                # Actual
+                fig.add_trace(go.Scatter(x=[d['day'] for d in hist_data], y=[d['brix'] for d in hist_data], 
+                                         name="Actual Brix", line=dict(color="#3FB950", width=3), mode="lines+markers"))
+                # Predicted
+                if not pred_df.empty:
+                    fig.add_trace(go.Scatter(x=pred_df["day"], y=pred_df["brix"], 
+                                             name="AI Forecast", line=dict(color="#c9956a", width=2, dash="dot"), mode="lines"))
+                
+                fig.add_hline(y=target_brix, line_dash="dash", line_color="red", annotation_text="Target")
+                fig.update_layout(template="plotly_dark", paper_bgcolor="rgba(15,8,12,0.9)", plot_bgcolor="rgba(20,10,18,0.8)",
+                                  title="AI Forecast: Sugar Depletion Curve", xaxis_title="Days", yaxis_title="Brix")
+                st.plotly_chart(fig, use_container_width=True)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 23. AI MASTER BLENDER (LLM / BYOK)
+# ─────────────────────────────────────────────────────────────────────────────
+elif calculator == t("calc_ai_blend"):
+    st.markdown(f"## 🧠 AI Master Blender (Agentic)")
+    st.markdown("*LLM-powered blend optimization. Requires API Key (OpenAI or DeepSeek).*")
+    
+    api_key = st.text_input("Enter API Key (sk-...)", type="password", help="Your key is not stored. It is only used for this session.")
+    
+    target_style = st.text_area("Describe your target wine style", placeholder="e.g. A Bordeaux-style blend with high tannins, good acidity, and dark fruit notes.")
+    
+    st.markdown("### Input Base Wines (Lots)")
+    lots = st.text_area("Describe your available lots", height=150,
+                        placeholder="Lot A: Cabernet Sauvignon, 14% ABV, pH 3.6, high pyrazines.\nLot B: Merlot, 14.5% ABV, pH 3.8, very fruity and soft.\nLot C: Petit Verdot, 13.5% ABV, high acidity, intense color.")
+                        
+    if st.button("🔮 Generate Blend Strategy"):
+        if not api_key:
+            st.error("Please enter an API Key to use the Agentic Master Blender.")
+        elif not target_style or not lots:
+            st.warning("Please fill in both the target style and the available lots.")
+        else:
+            with st.spinner("AI is analyzing profiles..."):
+                res = generate_blending_advice(api_key, lots, target_style)
+                
+            if "error" in res:
+                st.error(f"Error from AI: {res['error']}")
+            else:
+                st.markdown("### 🧑‍🔬 AI Master Blender Recommendation")
+                st.markdown(f"<div class='result-card' style='font-family: Inter;'>{res['result']}</div>", unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 24. EXPORT PDF
 # ─────────────────────────────────────────────────────────────────────────────
 elif calculator == t("calc_export"):
     st.markdown(f"## {t('export_title')}")
