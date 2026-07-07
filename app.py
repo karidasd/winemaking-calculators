@@ -55,8 +55,8 @@ st.markdown("""
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap');
   .stApp { background: linear-gradient(135deg, #0a0608 0%, #1a0a10 50%, #0d0d14 100%); color: #e8d5b7; }
-  h1,h2,h3 { font-family: 'Playfair Display', serif !important; }
-  p,div,label,span { font-family: 'Inter', sans-serif !important; }
+  h1,h2,h3 { font-family: 'Playfair Display', serif !important; line-height: 1.3 !important; margin-bottom: 0.5em !important; }
+  p,label,span { font-family: 'Inter', sans-serif !important; line-height: 1.6 !important; }
   [data-testid="stSidebar"] { background: linear-gradient(180deg, #1a0a10 0%, #0d0d14 100%); border-right: 1px solid #3d1a26; }
   .hero { background: linear-gradient(135deg, rgba(120,30,50,0.4) 0%, rgba(30,20,60,0.4) 100%); border: 1px solid rgba(180,100,80,0.3); border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 32px; backdrop-filter: blur(10px); }
   .hero h1 { color: #c9956a !important; font-size: 2.6rem; margin-bottom: 8px; text-shadow: 0 0 30px rgba(180,100,80,0.5); }
