@@ -2,11 +2,11 @@
   <img src="assets/banner.png" alt="Winemaking Calculators Banner" width="100%">
 </p>
 
-<h1 align="center">🍷 Winemaking Calculators</h1>
+<h1 align="center">🍷 Winemaking Calculators (AI Edition)</h1>
 
 <p align="center">
-  <strong>Professional tools for oenologists & winemakers — Science behind every bottle.</strong><br>
-  <em>8 calculators. Zero fluff. 100% open source.</em>
+  <strong>Enterprise-grade tools for Oenologists & Master Blenders — Powered by Machine Learning.</strong><br>
+  <em>19 professional modules. Zero fluff. 100% open source.</em>
 </p>
 
 <p align="center">
@@ -51,6 +51,16 @@ This repository gives you **clean, documented Python code** for every core winem
 | 15 | 🪵 **Oak & Tannins** | Oak alternative dosage (chips, cubes, staves) with extraction times |
 | 16 | 🧪 **Wine Fault Diagnosis** | Rule-based diagnosis based on sensory analysis symptoms |
 | 17 | 🏛 **Greek Varieties** | Analytical benchmark against optimal grape ranges (Xinomavro, Assyrtiko, etc.) |
+| 18 | 🤖 **AI Ferment Predictor** | Machine Learning (Scikit-Learn) forecasting for sugar depletion curve |
+| 19 | 🧠 **AI Master Blender** | Agentic LLM (BYOK) blending ratios optimization based on scientific profiling |
+---
+
+## 🧠 Enterprise AI Architecture
+
+This project has been upgraded beyond standard static formulas to include modern AI capabilities:
+
+1. **Machine Learning Forecasting (`scikit-learn`)**: We use Polynomial Regression to track the fermentation curve dynamically, predicting the exact day your tank will go dry and flagging stuck-fermentation risks mathematically.
+2. **Agentic Workflows (`openai` / `deepseek`)**: The Master Blender module uses the **BYOK (Bring Your Own Key)** pattern to integrate with LLMs without exposing public keys. It acts as a Master Sommelier, ingesting your lot analytics and returning scientifically reasoned blending percentages.
 
 ---
 
